@@ -1,0 +1,1162 @@
+/**
+ * Voice4All — Phase 1: Frontend Stylesheet
+ * Integrates an accessible floating launcher, slide-over side drawer,
+ * and three tabbed sections: Tutor, Live Help, and Career.
+ * All custom classes are prefixed with `v4a-`.
+ */
+
+/* ==========================================================================
+   Design Tokens & CSS Variables
+   ========================================================================== */
+:root {
+  --v4a-primary: #001f3f;
+  --v4a-primary-hover: #0a2d59;
+  --v4a-accent: #0d6efd;
+  --v4a-accent-hover: #0b5ed7;
+  --v4a-success: #198754;
+  --v4a-success-bg: #e8f5e9;
+  --v4a-warning: #b45309;
+  --v4a-warning-bg: #fffbeb;
+  --v4a-warning-border: #fde68a;
+  --v4a-danger: #dc3545;
+  --v4a-danger-bg: #fdf2f2;
+  --v4a-bg-surface: #ffffff;
+  --v4a-bg-subtle: #f8fafc;
+  --v4a-bg-muted: #f1f5f9;
+  --v4a-border: #e2e8f0;
+  --v4a-border-focus: #2563eb;
+  --v4a-text-main: #0f172a;
+  --v4a-text-muted: #64748b;
+  --v4a-text-inverse: #ffffff;
+  --v4a-radius-sm: 6px;
+  --v4a-radius-md: 10px;
+  --v4a-radius-lg: 16px;
+  --v4a-radius-pill: 9999px;
+  --v4a-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --v4a-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.12);
+  --v4a-shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --v4a-drawer-width: 440px;
+  --v4a-z-launcher: 1040;
+  --v4a-z-backdrop: 1045;
+  --v4a-z-drawer: 1050;
+  --v4a-z-modal: 1055;
+}
+
+/* ==========================================================================
+   Screen Reader Utility
+   ========================================================================== */
+.v4a-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ==========================================================================
+   Floating Launcher Button
+   ========================================================================== */
+.v4a-launcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: var(--v4a-z-launcher);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: var(--v4a-primary);
+  color: var(--v4a-text-inverse);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--v4a-radius-pill);
+  box-shadow: var(--v4a-shadow-lg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  user-select: none;
+}
+
+.v4a-launcher:hover {
+  background: var(--v4a-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.v4a-launcher:active {
+  transform: translateY(0);
+}
+
+.v4a-launcher:focus-visible {
+  outline: 3px solid var(--v4a-border-focus);
+  outline-offset: 3px;
+}
+
+.v4a-launcher-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 14px;
+}
+
+.v4a-launcher-icon {
+  color: #ffffff;
+}
+
+.v4a-launcher-badge-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid var(--v4a-primary);
+}
+
+.v4a-launcher-text {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Backdrop Overlay
+   ========================================================================== */
+.v4a-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: var(--v4a-z-backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.v4a-backdrop--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   Side Drawer Container
+   ========================================================================== */
+.v4a-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--v4a-drawer-width);
+  max-width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--v4a-bg-surface);
+  color: var(--v4a-text-main);
+  z-index: var(--v4a-z-drawer);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.18);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
+
+.v4a-drawer--open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+/* ==========================================================================
+   Drawer Header
+   ========================================================================== */
+.v4a-drawer-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--v4a-primary);
+  color: var(--v4a-text-inverse);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.v4a-drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.v4a-brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--v4a-radius-sm);
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.v4a-brand-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.v4a-brand-tagline {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.2;
+}
+
+.v4a-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Language Selection Switcher */
+.v4a-lang-group {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--v4a-radius-pill);
+  padding: 2px;
+}
+
+.v4a-lang-btn {
+  padding: 4px 10px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--v4a-radius-pill);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.v4a-lang-btn:hover {
+  color: #ffffff;
+}
+
+.v4a-lang-btn[aria-pressed="true"] {
+  background: #ffffff;
+  color: var(--v4a-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.v4a-lang-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+}
+
+/* Close Drawer Button */
+.v4a-btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.v4a-btn-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.v4a-btn-close:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Backend Status / Demo Mode Banner
+   ========================================================================== */
+.v4a-status-banner {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+}
+
+.v4a-status-banner--demo {
+  background-color: var(--v4a-warning-bg);
+  border-color: var(--v4a-warning-border);
+  color: var(--v4a-warning);
+}
+
+.v4a-status-banner--live {
+  background-color: var(--v4a-success-bg);
+  border-color: #a7f3d0;
+  color: var(--v4a-success);
+}
+
+.v4a-status-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v4a-status-pill {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   Accessible Tabs Navigation
+   ========================================================================== */
+.v4a-tablist {
+  flex-shrink: 0;
+  display: flex;
+  border-bottom: 2px solid var(--v4a-border);
+  background: var(--v4a-bg-subtle);
+  padding: 0 4px;
+  gap: 4px;
+}
+
+.v4a-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--v4a-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.v4a-tab:hover {
+  color: var(--v4a-primary);
+  background: rgba(0, 31, 63, 0.04);
+}
+
+.v4a-tab[aria-selected="true"] {
+  color: var(--v4a-primary);
+  border-bottom-color: var(--v4a-accent);
+  background: var(--v4a-bg-surface);
+}
+
+.v4a-tab:focus-visible {
+  outline: 2px solid var(--v4a-accent);
+  outline-offset: -2px;
+  border-radius: var(--v4a-radius-sm) var(--v4a-radius-sm) 0 0;
+}
+
+/* ==========================================================================
+   Tab Panels & General Section Layout
+   ========================================================================== */
+.v4a-tabpanel {
+  flex: 1;
+  overflow-y: auto;
+  display: none;
+  flex-direction: column;
+  padding: 16px;
+  background: var(--v4a-bg-surface);
+}
+
+.v4a-tabpanel--active {
+  display: flex;
+}
+
+.v4a-section-header {
+  margin-bottom: 14px;
+}
+
+.v4a-section-title {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--v4a-primary);
+}
+
+.v4a-section-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--v4a-text-muted);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Tutor Section (Voice & Chat Interface)
+   ========================================================================== */
+.v4a-tutor-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.v4a-chat-log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 4px 14px 4px;
+  min-height: 180px;
+}
+
+.v4a-chat-item {
+  display: flex;
+  flex-direction: column;
+  max-width: 90%;
+  animation: v4aFadeIn 0.2s ease-out;
+}
+
+.v4a-chat-item--user {
+  align-self: flex-end;
+}
+
+.v4a-chat-item--tutor {
+  align-self: flex-start;
+}
+
+.v4a-bubble {
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.v4a-chat-item--user .v4a-bubble {
+  background: var(--v4a-primary);
+  color: var(--v4a-text-inverse);
+  border-radius: var(--v4a-radius-lg) var(--v4a-radius-lg) var(--v4a-radius-sm) var(--v4a-radius-lg);
+}
+
+.v4a-chat-item--tutor .v4a-bubble {
+  background: var(--v4a-bg-subtle);
+  color: var(--v4a-text-main);
+  border: 1px solid var(--v4a-border);
+  border-radius: var(--v4a-radius-lg) var(--v4a-radius-lg) var(--v4a-radius-lg) var(--v4a-radius-sm);
+}
+
+.v4a-bubble-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--v4a-text-muted);
+}
+
+.v4a-tts-btn {
+  background: transparent;
+  border: 0;
+  padding: 2px 6px;
+  color: var(--v4a-accent);
+  cursor: pointer;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--v4a-radius-sm);
+  transition: background 0.15s ease;
+}
+
+.v4a-tts-btn:hover {
+  background: var(--v4a-bg-muted);
+}
+
+.v4a-tts-btn:focus-visible {
+  outline: 2px solid var(--v4a-accent);
+}
+
+.v4a-tts-btn--active {
+  color: var(--v4a-danger);
+  font-weight: 600;
+}
+
+/* Starters / Prompt Suggestions */
+.v4a-starters-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--v4a-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.v4a-starters-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.v4a-starter-chip {
+  padding: 6px 10px;
+  border-radius: var(--v4a-radius-pill);
+  background: var(--v4a-bg-muted);
+  border: 1px solid var(--v4a-border);
+  color: var(--v4a-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.v4a-starter-chip:hover {
+  background: var(--v4a-primary);
+  color: #ffffff;
+  border-color: var(--v4a-primary);
+}
+
+.v4a-starter-chip:focus-visible {
+  outline: 2px solid var(--v4a-accent);
+}
+
+/* Voice Input Banner & Pulse Animation */
+.v4a-voice-status {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--v4a-radius-sm);
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.v4a-voice-status--active {
+  display: flex;
+}
+
+.v4a-voice-pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: v4aPulse 1.2s infinite ease-in-out;
+}
+
+/* Input Form Controls */
+.v4a-input-form {
+  margin-top: auto;
+  border-top: 1px solid var(--v4a-border);
+  padding-top: 12px;
+}
+
+.v4a-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v4a-text-input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--v4a-text-main);
+  background: var(--v4a-bg-subtle);
+  border: 1px solid var(--v4a-border);
+  border-radius: var(--v4a-radius-pill);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.v4a-text-input:focus {
+  background: #ffffff;
+  border-color: var(--v4a-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.v4a-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 14px;
+}
+
+.v4a-icon-btn--primary {
+  background: var(--v4a-primary);
+  color: #ffffff;
+}
+
+.v4a-icon-btn--primary:hover:not(:disabled) {
+  background: var(--v4a-primary-hover);
+}
+
+.v4a-icon-btn--voice {
+  background: var(--v4a-bg-muted);
+  color: var(--v4a-primary);
+  border: 1px solid var(--v4a-border);
+}
+
+.v4a-icon-btn--voice:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.v4a-icon-btn--voice-active {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #dc2626;
+  animation: v4aPulse 1.4s infinite;
+}
+
+.v4a-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.v4a-icon-btn:focus-visible {
+  outline: 2px solid var(--v4a-accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Live Help Section (Support & Queued Requests)
+   ========================================================================== */
+.v4a-help-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.v4a-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.v4a-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--v4a-text-main);
+}
+
+.v4a-select,
+.v4a-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  background: var(--v4a-bg-subtle);
+  border: 1px solid var(--v4a-border);
+  border-radius: var(--v4a-radius-sm);
+  color: var(--v4a-text-main);
+  transition: border-color 0.15s ease;
+}
+
+.v4a-select:focus,
+.v4a-textarea:focus {
+  background: #ffffff;
+  border-color: var(--v4a-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+}
+
+.v4a-textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+/* Radio Cards for Assistance Mode */
+.v4a-radio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.v4a-radio-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  text-align: center;
+  background: var(--v4a-bg-subtle);
+  border: 1px solid var(--v4a-border);
+  border-radius: var(--v4a-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.v4a-radio-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.v4a-radio-card-icon {
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: var(--v4a-primary);
+}
+
+.v4a-radio-card-text {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.v4a-radio-card:has(input:checked) {
+  background: #eff6ff;
+  border-color: var(--v4a-accent);
+  color: var(--v4a-accent);
+}
+
+.v4a-radio-card:has(input:focus-visible) {
+  outline: 2px solid var(--v4a-accent);
+  outline-offset: 1px;
+}
+
+/* Honest Screen Share Notice Box */
+.v4a-notice-box {
+  padding: 10px 12px;
+  border-radius: var(--v4a-radius-sm);
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #334155;
+  display: flex;
+  gap: 8px;
+}
+
+.v4a-notice-box-icon {
+  color: #0284c7;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Support Active Request Card */
+.v4a-ticket-card {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--v4a-border);
+  border-radius: var(--v4a-radius-md);
+  box-shadow: var(--v4a-shadow-sm);
+}
+
+.v4a-ticket-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.v4a-ticket-id {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--v4a-primary);
+}
+
+.v4a-ticket-status-pill {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--v4a-radius-pill);
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.v4a-ticket-body {
+  font-size: 12px;
+  color: var(--v4a-text-muted);
+  margin-bottom: 8px;
+}
+
+/* ==========================================================================
+   Career Section (Jobs & Accommodation Requests)
+   ========================================================================== */
+.v4a-career-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.v4a-filter-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.v4a-filter-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--v4a-border);
+  background: var(--v4a-bg-subtle);
+  border-radius: var(--v4a-radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--v4a-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.v4a-filter-btn:hover {
+  background: #e2e8f0;
+  color: var(--v4a-primary);
+}
+
+.v4a-filter-btn[aria-pressed="true"] {
+  background: var(--v4a-primary);
+  color: #ffffff;
+  border-color: var(--v4a-primary);
+}
+
+.v4a-filter-btn:focus-visible {
+  outline: 2px solid var(--v4a-accent);
+}
+
+.v4a-job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.v4a-job-card {
+  padding: 14px;
+  background: var(--v4a-bg-surface);
+  border: 1px solid var(--v4a-border);
+  border-radius: var(--v4a-radius-md);
+  box-shadow: var(--v4a-shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.v4a-job-card:hover {
+  box-shadow: var(--v4a-shadow-md);
+  transform: translateY(-1px);
+}
+
+.v4a-job-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--v4a-primary);
+}
+
+.v4a-job-company {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--v4a-text-muted);
+  margin-bottom: 6px;
+}
+
+.v4a-job-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.v4a-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  border-radius: var(--v4a-radius-sm);
+  background: var(--v4a-bg-muted);
+  color: #334155;
+  font-weight: 500;
+}
+
+.v4a-tag--accessible {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.v4a-job-desc {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.v4a-job-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   Buttons & Generic Controls
+   ========================================================================== */
+.v4a-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--v4a-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.v4a-btn--primary {
+  background: var(--v4a-primary);
+  color: #ffffff;
+}
+
+.v4a-btn--primary:hover:not(:disabled) {
+  background: var(--v4a-primary-hover);
+}
+
+.v4a-btn--outline {
+  background: transparent;
+  border-color: var(--v4a-border);
+  color: var(--v4a-primary);
+}
+
+.v4a-btn--outline:hover:not(:disabled) {
+  background: var(--v4a-bg-muted);
+  border-color: #cbd5e1;
+}
+
+.v4a-btn--danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.v4a-btn--danger:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.v4a-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.v4a-btn:focus-visible {
+  outline: 2px solid var(--v4a-accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Accommodation Request Modal / Inline Panel
+   ========================================================================== */
+.v4a-acc-panel {
+  margin-top: 14px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 2px solid #93c5fd;
+  border-radius: var(--v4a-radius-md);
+  box-shadow: var(--v4a-shadow-sm);
+  animation: v4aFadeIn 0.2s ease-out;
+}
+
+.v4a-acc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.v4a-acc-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--v4a-primary);
+}
+
+.v4a-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.v4a-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--v4a-text-main);
+}
+
+.v4a-checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--v4a-accent);
+}
+
+/* ==========================================================================
+   Feedback States (Loading, Error, Empty)
+   ========================================================================== */
+.v4a-loading-state,
+.v4a-error-state,
+.v4a-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--v4a-text-muted);
+}
+
+.v4a-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--v4a-border);
+  border-top-color: var(--v4a-accent);
+  border-radius: 50%;
+  animation: v4aSpin 0.75s linear infinite;
+  margin-bottom: 8px;
+}
+
+.v4a-error-state {
+  color: var(--v4a-danger);
+}
+
+.v4a-error-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.v4a-empty-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+@keyframes v4aFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes v4aSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes v4aPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* ==========================================================================
+   Accessibility & Responsive Media Queries
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .v4a-launcher,
+  .v4a-drawer,
+  .v4a-backdrop,
+  .v4a-chat-item,
+  .v4a-spinner,
+  .v4a-voice-pulse-dot,
+  .v4a-icon-btn--voice-active {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 576px) {
+  :root {
+    --v4a-drawer-width: 100vw;
+  }
+
+  .v4a-launcher {
+    bottom: 16px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .v4a-tab {
+    font-size: 12px;
+    padding: 10px 4px;
+    gap: 4px;
+  }
+
+  .v4a-radio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (forced-colors: active) {
+  .v4a-launcher,
+  .v4a-drawer,
+  .v4a-btn,
+  .v4a-tab[aria-selected="true"] {
+    border: 2px solid ButtonText !important;
+  }
+
+  .v4a-launcher:focus-visible,
+  .v4a-btn:focus-visible,
+  .v4a-tab:focus-visible {
+    outline: 3px solid Highlight !important;
+  }
+}
